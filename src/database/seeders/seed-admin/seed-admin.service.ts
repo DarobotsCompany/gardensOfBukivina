@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { genSaltSync, hashSync } from 'bcrypt';
-import { RolesEnum } from '../../../admin/roles/enums/roles.enum';
+import { RolesEnum } from '../../../admin/administrators/enums/roles.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AdministratorEntity } from '../../../admin/administrators/entities/administrator.entity';
 import { Repository } from 'typeorm';

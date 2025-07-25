@@ -1,4 +1,4 @@
-import { RolesEnum } from '../../roles/enums/roles.enum';
+import { RolesEnum } from '../../administrators/enums/roles.enum';
 
 export interface IAdminJwtPayload {
     id: number;

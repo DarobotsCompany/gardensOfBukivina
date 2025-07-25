@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { AdministratorsService } from '../services/administrators.service';
 import { CreateAdministratorDto } from '../dto/create-administrator.dto';
 import { JwtAuthAdminGuard } from '../../auth/guards/auth-admin.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import { RolesEnum } from '../../roles/enums/roles.enum';
+import { RolesEnum } from '../enums/roles.enum';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { IMessage } from '../../../common/dtos/responses/message.interface';
 import { UpdateAdministratorDto } from '../dto/update-administrator.dto';
@@ -36,7 +36,7 @@ export class AdministratorsController {
 
     @UseGuards(JwtAuthAdminGuard, RolesGuard)
     @Roles(RolesEnum.SUPPER_MANAGER)
-    @Post('delete/:id')
+    @Delete('/:id')
     async deleteAdministrator(@Param('id') id: number): Promise<IMessage> {
         return this.administratorsService.deleteAdministrator(id);
     }

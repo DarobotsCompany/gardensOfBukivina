@@ -63,9 +63,15 @@ export class AdministratorsService {
             throw new NotFoundException(`Administrator with ID ${id} not found.`);
         }
 
-        await this.administratorRepository.update(id, updateUserDto);
+        const { repeatPassword, password, ...rest } = updateUserDto;
 
-        await this.administratorRepository.findOneOrFail({ where: { id } });
+        const dataToUpdate: Partial<UpdateAdministratorDto> = { ...rest };
+
+        if (password) {
+            dataToUpdate.password = this.hashPassword(password);
+        }
+
+        await this.administratorRepository.update(id, dataToUpdate);
 
         return { message: `Administrator with ID ${id} was successfully updated.` };
     }

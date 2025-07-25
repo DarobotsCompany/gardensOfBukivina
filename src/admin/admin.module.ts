@@ -3,7 +3,6 @@ import { AdministratorsModule } from './administrators/administrators.module';
 import { ChatsModule } from './chats/chats.module';
 import { MessagesModule } from './messages/messages.module';
 import { RouterModule } from '@nestjs/core';
-import { RolesModule } from './roles/roles.module';
 import { AuthModule } from './auth/auth.module';
 
 const routes = [
@@ -23,10 +22,6 @@ const routes = [
         module: MessagesModule,
       },
       {
-        path: '/roles',
-        module: RolesModule,
-      },
-      {
         path: '/auth',
         module: AuthModule,
       },
@@ -40,7 +35,6 @@ const routes = [
     AdministratorsModule, 
     ChatsModule, 
     MessagesModule,
-    RolesModule,
     AuthModule, 
   ],
   controllers: [],

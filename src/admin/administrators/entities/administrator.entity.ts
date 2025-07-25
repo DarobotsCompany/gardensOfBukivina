@@ -3,7 +3,7 @@ import {
     Column,
     Entity,
 } from 'typeorm';
-import { RolesEnum } from '../../roles/enums/roles.enum';
+import { RolesEnum } from '../enums/roles.enum';
 
 @Entity()
 export class AdministratorEntity extends BasicEntity {

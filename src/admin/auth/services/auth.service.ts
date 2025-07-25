@@ -17,7 +17,7 @@ export class AuthService {
     async login(dto: LoginDto): Promise<IAccessToken> {
         const { email, password } = dto;
         const ERROR_MESSAGE = 'Incorrect email or password.';
-        const admin = await this.administratorService.getUser({ where: { email } });
+        const admin = await this.administratorService.getAdministrator({ where: { email } });
 
         if (!admin) {
             throw new NotFoundException(ERROR_MESSAGE)

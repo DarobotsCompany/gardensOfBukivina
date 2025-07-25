@@ -17,5 +17,5 @@ export class CreateAdministratorDto {
     @Validate(IsPasswordsMatchingConstraint)
     @IsString()
     @IsNotEmpty()
-    repeatPassword: string;
+    repeatPassword?: string;
 }

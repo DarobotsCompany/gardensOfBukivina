@@ -20,7 +20,7 @@ export class JwtAdminStrategy extends PassportStrategy(Strategy, 'jwt-admin') {
 
     async validate(payload: IAdminJwtPayload): Promise<AdministratorEntity> {
         const { id } = payload;
-        const admin = await this.administratorsService.getUser({
+        const admin = await this.administratorsService.getAdministrator({
             where: { id },
         });
 

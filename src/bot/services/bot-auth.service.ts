@@ -3,7 +3,6 @@ import { Ctx, InjectBot, On, Start, Update } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
 import { UsersService } from '../../users/services/users.service';
 import { ISessionContext } from '../interfaces/session-context.interface';
-import { BotTriggers } from '../constants/bot-triggers';
 
 @Update()
 @Injectable()

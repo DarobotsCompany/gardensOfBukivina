@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ChatsService } from './services/chats.service';
 import { ChatsController } from './controllers/chats.controller';
-import { ChatGateway } from './controllers/chat.gateway';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { ChatGateway } from './services/chat.gateway';
+import { JwtService } from '@nestjs/jwt';
 import { MessagesModule } from '../messages/messages.module';
-import { ConfigModule } from '@nestjs/config';
+import { ChatEntity } from './entities/chat.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
     imports: [
+        TypeOrmModule.forFeature([ChatEntity]),
         MessagesModule,
     ],
     controllers: [ChatsController],

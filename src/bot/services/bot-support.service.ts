@@ -3,7 +3,7 @@ import { InjectBot, Update } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
 import { UsersService } from '../../users/services/users.service';
 import { ISessionContext } from '../interfaces/session-context.interface';
-import { ChatGateway } from '../../admin/chats/controllers/chat.gateway';
+import { ChatGateway } from '../../admin/chats/services/chat.gateway';
 
 @Update()
 @Injectable()
@@ -18,7 +18,6 @@ export class BotSupportService {
         console.log('Получено сообщение:', ctx.text);
 
         await this.onTelegramMessageReceived(1, "test", "1")
-
     }
 
     async onTelegramMessageReceived(roomId: number, text: string, fromUser: string) {

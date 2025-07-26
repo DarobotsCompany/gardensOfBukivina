@@ -24,7 +24,7 @@ export class BotAuthService {
 
         const userData = {
             telegramId,
-            username: userTg.username,
+            username: userTg.username || "",
             fullName: `${userTg.first_name ?? ''} ${userTg.last_name ?? ''}`.trim(),
         };
 
@@ -33,6 +33,7 @@ export class BotAuthService {
             ctx.session.user = user;
         } else {
             const newUser = await this.usersService.createUser(userData);
+            console.log(newUser)
             ctx.session.user = newUser;
         }
 
@@ -80,37 +81,5 @@ export class BotAuthService {
         });
 
         ctx.session.awaitingFullName = true;
-    }
-
-    @On('text')
-    async handleText(@Ctx() ctx: ISessionContext): Promise<void> {
-        const chatId = ctx.chat?.id;
-        if (!chatId || !ctx.message || !('text' in ctx.message) || !ctx.from) return;
-
-        if (ctx.session.awaitingFullName) {
-            const fullName = ctx.message.text;
-
-            const user = await this.usersService.getUser({
-                where: { telegramId: ctx.from.id },
-            });
-
-            if (user) {
-                await this.usersService.updateUser(user.id, { fullName });
-            }
-
-            ctx.session.awaitingFullName = false;
-
-            await ctx.reply('✅ Дані збережено\nВи у головному меню', {
-                reply_markup: {
-                    keyboard: [
-                        [BotTriggers.editorChoice, BotTriggers.searchByName],
-                        [BotTriggers.cart, BotTriggers.orders],
-                        [BotTriggers.help, BotTriggers.info],
-                        [BotTriggers.support],
-                    ],
-                    resize_keyboard: true,
-                },
-            });
-        }
     }
 }

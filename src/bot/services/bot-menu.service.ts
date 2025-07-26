@@ -1,11 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { Ctx, Hears, Update } from 'nestjs-telegraf';
+import { Ctx, Hears, InjectBot, On, Update } from 'nestjs-telegraf';
 import { ISessionContext } from '../interfaces/session-context.interface';
 import { BotTriggers } from '../constants/bot-triggers';
+import { Context, Telegraf } from 'telegraf';
 
 @Update()
 @Injectable()
 export class BotMenuService {
+    constructor(
+      @InjectBot('bot') private readonly bot: Telegraf<Context>,
+    ) {}
+
     @Hears(BotTriggers.editorChoice)
     async onEditorChoice(@Ctx() ctx: ISessionContext) {
         await ctx.reply('Тут буде вибір редакції 📚');
@@ -39,5 +44,6 @@ export class BotMenuService {
     @Hears(BotTriggers.support)
     async onSupport(@Ctx() ctx: ISessionContext) {
         await ctx.reply('Напишіть нам, і ми відповімо 💬');
+        ctx.session.chat = true;
     }
 }

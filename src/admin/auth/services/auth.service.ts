@@ -34,6 +34,7 @@ export class AuthService {
         const tokenPayload: IAdminJwtPayload = {
             id: admin.id,
             email: admin.email,
+            username: admin.username,
             role: admin.role
         };
 

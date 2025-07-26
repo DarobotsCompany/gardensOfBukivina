@@ -1,10 +1,9 @@
 import { BasicEntity } from 'src/database/entities/basic.entity';
-import {
-    Column,
-    Entity,
-} from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { ChatEntity } from '../../admin/chats/entities/chat.entity';
+import { MessageEntity } from '../../admin/messages/entities/message.entity';
 
-@Entity()
+@Entity('users')
 export class UserEntity extends BasicEntity {
     @Column({ nullable: true })
     phone?: string;
@@ -17,4 +16,10 @@ export class UserEntity extends BasicEntity {
 
     @Column({ nullable: true })
     fullName?: string;
+
+    @OneToMany(() => ChatEntity, (chat) => chat.user)
+    chats: ChatEntity[];
+
+    @OneToMany(() => MessageEntity, (message) => message.user)
+    messages: MessageEntity[];
 }

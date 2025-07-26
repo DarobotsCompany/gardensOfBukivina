@@ -5,5 +5,6 @@ export interface ISessionContext extends Context {
     session: {
         user?: UserEntity;
         awaitingFullName?: boolean;
+        chat?: boolean;
     };
 }

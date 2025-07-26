@@ -22,5 +22,6 @@ dotenv.config();
         BotModule,
         UsersModule
     ],
+    providers: []
 })
 export class TelegramModule {}

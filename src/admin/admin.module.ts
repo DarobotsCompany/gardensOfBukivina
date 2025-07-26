@@ -4,6 +4,8 @@ import { ChatsModule } from './chats/chats.module';
 import { MessagesModule } from './messages/messages.module';
 import { RouterModule } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
 
 const routes = [
   {
@@ -32,10 +34,16 @@ const routes = [
 @Module({
   imports: [
     RouterModule.register(routes),
-    AdministratorsModule, 
-    ChatsModule, 
+    ConfigModule.forRoot(),
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_ADMIN_SECRET,
+      signOptions: { expiresIn: '1d' },
+    }),
+    AdministratorsModule,
+    ChatsModule,
     MessagesModule,
-    AuthModule, 
+    AuthModule,
   ],
   controllers: [],
   providers: [],

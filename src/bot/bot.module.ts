@@ -5,11 +5,13 @@ import { BotMenuService } from './services/bot-menu.service';
 import { ChatsModule } from '../admin/chats/chats.module';
 import { BotSupportService } from './services/bot-support.service';
 import { BotTextService } from './services/bot-text.service';
+import { MessagesModule } from '../admin/messages/messages.module';
 
 @Module({
     imports: [
         UsersModule,
-        ChatsModule
+        ChatsModule,
+        MessagesModule
     ],
     controllers: [],
     providers: [BotAuthService, BotMenuService, BotSupportService, BotTextService],

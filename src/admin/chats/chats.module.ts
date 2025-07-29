@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { MessagesModule } from '../messages/messages.module';
 import { ChatEntity } from './entities/chat.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtWsGuard } from './guards/jwt-ws-guard';
 
 @Module({
     imports: [
@@ -13,7 +14,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         MessagesModule,
     ],
     controllers: [ChatsController],
-    providers: [ChatsService, ChatGateway, JwtService],
+    providers: [ChatsService, ChatGateway, JwtService, JwtWsGuard],
     exports: [ChatGateway, ChatsService]
 })
 export class ChatsModule {}

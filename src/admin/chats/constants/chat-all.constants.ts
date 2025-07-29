@@ -1,0 +1,1 @@
+export const NEW_FOR_ALL_ROOM = 'generalRoom'

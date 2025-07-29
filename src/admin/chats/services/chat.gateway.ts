@@ -9,69 +9,70 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { IAdminJwtPayload } from '../../auth/interfaces/admin-jwt-payload.interface';
+import { BuildRoomId } from '../utils/build-room-name';
+import { BuildGeneralRoomId } from '../utils/build-generalroom-name';
+import { NEW_FOR_ALL_ROOM } from '../constants/chat-all.constants';
+import { JwtWsGuard } from '../guards/jwt-ws-guard';
+import { Logger, UnauthorizedException, UseGuards } from '@nestjs/common';
 
 @WebSocketGateway({ cors: { origin: '*', }})
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer() server: Server;
+    private readonly logger = new Logger(ChatGateway.name, { timestamp: true });
 
     constructor(
         private readonly jwtService: JwtService,
     ) {}
 
     afterInit(server: Server) {
-        console.log('✅ WebSocket сервер ініціалізовано');
+        this.logger.debug('✅ WebSocket сервер ініціалізовано');
     }
 
+    @UseGuards(JwtWsGuard)
     async handleConnection(client: Socket) {
         try {
-            const token = client.handshake.query.token as string;
-            if (!token) throw new Error('Токен відсутній');
+            const token = client.handshake.headers.authorization as string;
 
-            const payload: IAdminJwtPayload = this.jwtService.verify(token, {
+            if (!token) throw new UnauthorizedException('Токен відсутній');
+
+            const jwtPayload: IAdminJwtPayload = this.jwtService.verify(token, {
                 secret: process.env.JWT_ADMIN_SECRET,
             });
 
-            client.data.user = payload;
-            const roomName = 'room1';
-            client.join(roomName);
-            console.log(`👤 ${payload.username} автоматично приєднався до кімнати ${roomName}`);
+            const generalRoomName = new BuildGeneralRoomId(jwtPayload.id).getRoomName;
+            const newForAllRoom = NEW_FOR_ALL_ROOM;
 
+            client.join(generalRoomName);
+            client.join(newForAllRoom);
+            this.logger.debug(`🔗 Користувач ${jwtPayload.email} підключився до загальної кімнати ${generalRoomName} та кімнати для всіх ${newForAllRoom}`);
         } catch (err) {
-            console.log('❌ Помилка аутентифікації WebSocket:', err.message);
+            this.logger.error('❌ Помилка аутентифікації WebSocket:', err.message);
             client.disconnect();
         }
     }
 
-    handleDisconnect(client: Socket) {
-        if (client.data.user) {
-            console.log(`🔌 Користувач ${client.data.user.username} відключився`);
-        }
+    @UseGuards(JwtWsGuard)
+    @SubscribeMessage('joinPersonalRoom')
+    handleJoinPersonalRoom(client: Socket, payload: { telegramId: string }) {
+        const roomName = new BuildRoomId(payload.telegramId).getRoomName;
+        client.join(roomName);
+        this.logger.debug(`👤 ${client.data.user?.email} приєднався до персональної кімнати ${roomName}`);
     }
 
-    @SubscribeMessage('leaveRoom')
-    async handleLeaveRoom(client: Socket, roomId: number) {
-        const roomName = 'room' + roomId;
-        client.leave(roomName);
-        console.log(`👤 ${client.data.user.username} вийшов з кімнати ${roomName}`);
+    handleDisconnect(client: Socket) {
+        if (client.data.user) {
+            this.logger.debug(`🔌 Користувач ${client.data.user.username} відключився`);
+        }
     }
 
     @SubscribeMessage('newMessage')
     async handleMessage(client: Socket, payload: { roomId: number; message: string }) {
         const roomName = 'room' + payload.roomId;
-        console.log(`✉️ Повідомлення від ${client.data.user.username} в ${roomName}: ${payload.message}`);
+        this.logger.debug(`✉️ Повідомлення від ${client.data.user.username} в ${roomName}: ${payload.message}`);
 
         this.server.to(roomName).emit('newMessage', {
             from: client.data.user.username,
             message: payload.message,
-            sentAt: new Date().toISOString(),
-        });
-    }
-
-    sendMessageToRoom(roomId: number, message: { from: string; message: string }) {
-        const roomName = 'room' + roomId;
-        this.server.to(roomName).emit('newMessage', {
-            from: message.from,
-            message: message.message,
             sentAt: new Date().toISOString(),
         });
     }

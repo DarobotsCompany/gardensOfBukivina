@@ -24,7 +24,7 @@ export class MessageEntity extends BasicEntity {
     administrator?: AdministratorEntity;
 
     @Column({ type: 'text' })
-    content: string;
+    text: string;
 
     @Column({ default: false })
     isRead: boolean;

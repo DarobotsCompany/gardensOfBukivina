@@ -28,7 +28,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         this.logger.debug('✅ WebSocket сервер ініціалізовано');
     }
 
-    @UseGuards(JwtWsGuard)
     async handleConnection(client: Socket) {
         try {
             const token = client.handshake.headers.authorization as string;
@@ -63,17 +62,5 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         if (client.data.user) {
             this.logger.debug(`🔌 Користувач ${client.data.user.username} відключився`);
         }
-    }
-
-    @SubscribeMessage('newMessage')
-    async handleMessage(client: Socket, payload: { roomId: number; message: string }) {
-        const roomName = 'room' + payload.roomId;
-        this.logger.debug(`✉️ Повідомлення від ${client.data.user.username} в ${roomName}: ${payload.message}`);
-
-        this.server.to(roomName).emit('newMessage', {
-            from: client.data.user.username,
-            message: payload.message,
-            sentAt: new Date().toISOString(),
-        });
     }
 }

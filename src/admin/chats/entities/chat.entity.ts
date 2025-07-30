@@ -9,6 +9,7 @@ import {
 import { UserEntity } from 'src/users/entities/user.entity';
 import { AdministratorEntity } from '../../administrators/entities/administrator.entity';
 import { MessageEntity } from '../../messages/entities/message.entity';
+import { ChatStatus } from '../enums/chat-status.enum';
 
 @Entity('chats')
 export class ChatEntity extends BasicEntity {
@@ -23,6 +24,6 @@ export class ChatEntity extends BasicEntity {
     @OneToMany(() => MessageEntity, (message) => message.chat, { cascade: true })
     messages: MessageEntity[];
 
-    @Column({ default: false })
-    status: boolean;
+    @Column({ default: ChatStatus.NEW })
+    status: ChatStatus;
 }

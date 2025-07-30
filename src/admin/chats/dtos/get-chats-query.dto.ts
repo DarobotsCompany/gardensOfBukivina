@@ -1,12 +1,3 @@
-import { IsOptional } from 'class-validator';
-import { Type } from 'class-transformer';
+import { GetByPaginationDto } from 'src/common/dtos/requests/get-by-pagination.dto';
 
-export class GetChatsQueryDto {
-  @IsOptional()
-  @Type(() => Number)
-  take?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  skip?: number;
-}
+export class GetChatsQueryDto extends GetByPaginationDto {}

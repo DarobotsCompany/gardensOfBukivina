@@ -6,8 +6,6 @@ import { ICteateChat } from '../schemas/create-chat.schema';
 import { GetChatsQueryDto } from '../dtos/get-chats-query.dto';
 import { IGetDataPages } from 'src/common/dtos/responses/get-data-pages.interface';
 import { UpdateChatDto } from '../dtos/update-chat.dto';
-import { UsersService } from 'src/users/services/users.service';
-import { IMessage } from 'src/common/dtos/responses/message.interface';
 import { AdministratorsService } from 'src/admin/administrators/services/administrators.service';
 import { ChatStatus } from '../enums/chat-status.enum';
 

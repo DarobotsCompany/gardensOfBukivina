@@ -26,7 +26,7 @@ export class ChatsController {
         @Param('chatId') chatId: number,
         @Body() dto: UpdateChatDto, 
         @Admin() admin: IAdminJwtPayload
-    ) {
+    ): Promise<ChatEntity> {
         return this.chatsService.updateChat(chatId, admin.id, dto);
     }
 }

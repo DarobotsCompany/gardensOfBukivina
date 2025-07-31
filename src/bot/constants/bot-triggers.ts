@@ -6,4 +6,6 @@ export const BotTriggers = {
     help: '🧑‍💻Допомога',
     info: '⚠️🖋 Інфо',
     support: '💬 Підтримка',
+
+    completeChat: '❌ Завершити чат'
 };

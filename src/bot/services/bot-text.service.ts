@@ -5,6 +5,8 @@ import { UsersService } from '../../users/services/users.service';
 import { ISessionContext } from '../interfaces/session-context.interface';
 import { BotTriggers } from '../constants/bot-triggers';
 import { BotSupportService } from './bot-support.service';
+import { menuKeyboard } from '../keyboards/menu.keyboards';
+import { keyboard } from 'telegraf/typings/markup';
 
 @Update()
 @Injectable()
@@ -43,12 +45,7 @@ export class BotTextService {
         ctx.session.awaitingFullName = false;
         await ctx.reply('✅ Дані збережено\nВи у головному меню', {
             reply_markup: {
-                keyboard: [
-                    [BotTriggers.editorChoice, BotTriggers.searchByName],
-                    [BotTriggers.cart, BotTriggers.orders],
-                    [BotTriggers.help, BotTriggers.info],
-                    [BotTriggers.support],
-                ],
+                keyboard: menuKeyboard,
                 resize_keyboard: true,
             },
         });

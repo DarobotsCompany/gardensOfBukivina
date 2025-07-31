@@ -3,7 +3,6 @@ import { ChatsService } from './services/chats.service';
 import { ChatsController } from './controllers/chats.controller';
 import { ChatGateway } from './services/chat.gateway';
 import { JwtService } from '@nestjs/jwt';
-import { MessagesModule } from '../messages/messages.module';
 import { ChatEntity } from './entities/chat.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtWsGuard } from './guards/jwt-ws-guard';
@@ -13,7 +12,6 @@ import { AdministratorsModule } from '../administrators/administrators.module';
 @Module({
     imports: [
         TypeOrmModule.forFeature([ChatEntity]),
-        MessagesModule,
         AdministratorsModule
     ],
     controllers: [ChatsController],

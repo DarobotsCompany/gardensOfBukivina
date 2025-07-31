@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ChatEntity } from '../entities/chat.entity';
-import { FindOneOptions, IsNull, Repository } from 'typeorm';
+import { FindOneOptions, IsNull, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ICteateChat } from '../schemas/create-chat.schema';
 import { GetChatsQueryDto } from '../dtos/get-chats-query.dto';
@@ -8,11 +8,15 @@ import { IGetDataPages } from 'src/common/dtos/responses/get-data-pages.interfac
 import { UpdateChatDto } from '../dtos/update-chat.dto';
 import { AdministratorsService } from 'src/admin/administrators/services/administrators.service';
 import { ChatStatus } from '../enums/chat-status.enum';
+import { Context, Telegraf } from 'telegraf';
+import { InjectBot } from 'nestjs-telegraf';
+import { menuKeyboard } from 'src/bot/keyboards/menu.keyboards';
 
 @Injectable()
 export class ChatsService {
     constructor(
         @InjectRepository(ChatEntity) private readonly chatRepository: Repository<ChatEntity>,
+        @InjectBot('bot') private readonly bot: Telegraf<Context>,
         private readonly administratorsService: AdministratorsService,
     ) {}
 
@@ -52,7 +56,7 @@ export class ChatsService {
 
         const chat = await this.chatRepository.findOne({
             where: { id: chatId },
-            relations: ['administrator'],
+            relations: ['administrator', 'user'],
         });
 
         if (!chat) {
@@ -65,15 +69,34 @@ export class ChatsService {
             chat.administrator = admin;
         }
 
+        if (dto.status === ChatStatus.COMPLETE) {
+            await this.bot.telegram.sendMessage(
+                chat.user.telegramId,
+                `💬 Адміністратор ${chat.administrator.username} завершив чат. Якщо з’являться нові питання — не соромтесь писати нам 😊`,
+                {
+                    reply_markup: {
+                        keyboard: menuKeyboard,
+                        resize_keyboard: true,
+                    },
+                },
+            );
+        }
+
         return await this.chatRepository.save(chat);
     }
 
-    async updateChatStatus(chatId: number, status: ChatStatus): Promise<ChatEntity | null> {
-        const chat = await this.chatRepository.findOne({ where: { id: chatId } });
+    async closeChatByTelegramId(telegramUserId: number): Promise<void> {
+        const chats = await this.chatRepository.find({
+            where: {
+                status: Not(ChatStatus.COMPLETE),
+                user: { telegramId: telegramUserId },
+            },
+            relations: ['user'],
+        });
 
-        if (!chat) return null;
-
-        chat.status = status;
-        return this.chatRepository.save(chat);
+        for (const chat of chats) {
+            chat.status = ChatStatus.COMPLETE;
+            await this.chatRepository.save(chat);
+        }
     }
 }

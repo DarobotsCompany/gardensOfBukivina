@@ -53,7 +53,7 @@ export class BotSupportService {
             chat = await this.chatService.createChat({ user });
         }
 
-        const message = await this.messagesService.createMessage({
+        const message = await this.messagesService.createMessageAsTelegramUser({
             chat, user, text
         });
 

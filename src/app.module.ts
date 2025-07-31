@@ -7,6 +7,7 @@ import { AdminModule } from './admin/admin.module';
 import { BotModule } from './bot/bot.module';
 import { OcstoreModule } from './ocstore/ocstore.module';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
+import { NotionsModule } from './admin/notions/notions.module';
 
 @Module({
   imports: [

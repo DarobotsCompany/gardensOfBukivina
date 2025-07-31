@@ -11,6 +11,10 @@ import { ChatStatus } from '../enums/chat-status.enum';
 import { Context, Telegraf } from 'telegraf';
 import { InjectBot } from 'nestjs-telegraf';
 import { menuKeyboard } from 'src/bot/keyboards/menu.keyboards';
+import { IMessage } from 'src/common/dtos/responses/message.interface';
+import { OwnChatDto } from '../dtos/own-chat.dto';
+import { IAdminJwtPayload } from 'src/admin/auth/interfaces/admin-jwt-payload.interface';
+import { RolesEnum } from 'src/admin/administrators/enums/roles.enum';
 
 @Injectable()
 export class ChatsService {
@@ -20,20 +24,24 @@ export class ChatsService {
         private readonly administratorsService: AdministratorsService,
     ) {}
 
-    async getChats(adminId: number, query: GetChatsQueryDto): Promise<IGetDataPages<ChatEntity>> {
+    async getChats(admin: IAdminJwtPayload, query: GetChatsQueryDto): Promise<IGetDataPages<ChatEntity>> {
         const { take = 10, skip = 0 } = query;
 
+        const isSuper = admin.role === RolesEnum.SUPER_MANAGER;
+
+        const where = isSuper
+            ? undefined
+            : [{ administrator: { id: admin.id } }, { administrator: IsNull() }];
+
         const [data, total] = await this.chatRepository.findAndCount({
-            where: [
-                { administrator: { id: adminId } },
-                { administrator: IsNull() },
-            ],
+            where,
             take,
             skip,
             relations: ['administrator'],
         });
 
         return { data, total };
+
     }
 
     async getChat(options: FindOneOptions<ChatEntity>): Promise<ChatEntity | null> {
@@ -98,5 +106,31 @@ export class ChatsService {
             chat.status = ChatStatus.COMPLETE;
             await this.chatRepository.save(chat);
         }
+    }
+
+    async ownManadgerToChat(query: OwnChatDto): Promise<IMessage> {
+        const { chatId, adminId } = query;
+
+        const chat = await this.chatRepository.findOne({
+            where: { id: chatId },
+        })
+
+        if (!chat) {
+            throw new NotFoundException('Chat not found');
+        }
+
+        const administrator = await this.administratorsService.getAdministrator({
+            where: { id: adminId }
+        })
+
+        if (!administrator) {
+            throw new NotFoundException('Administrator not found');
+        }
+
+        chat.administrator = administrator;
+        chat.status = ChatStatus.ACTIVE;
+        await this.chatRepository.save(chat);
+
+        return { message: `Ви успішно призначили менеджера ${administrator.username} для чату.`}
     }
 }

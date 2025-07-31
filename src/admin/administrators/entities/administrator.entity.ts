@@ -3,6 +3,7 @@ import { Column, Entity, OneToMany } from 'typeorm';
 import { RolesEnum } from '../enums/roles.enum';
 import { ChatEntity } from '../../chats/entities/chat.entity';
 import { MessageEntity } from '../../messages/entities/message.entity';
+import { NotionEntity } from 'src/admin/notions/entities/notion.entity';
 
 @Entity('administrators')
 export class AdministratorEntity extends BasicEntity {
@@ -27,4 +28,7 @@ export class AdministratorEntity extends BasicEntity {
 
     @OneToMany(() => MessageEntity, (message) => message.administrator)
     messages: MessageEntity[];
+
+    @OneToMany(() => NotionEntity, (note) => note.administrator)
+    notes: NotionEntity[];
 }

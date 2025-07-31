@@ -33,7 +33,7 @@ export class SeedAdminService {
                 email: this.ADMIN_EMAIL,
                 username: this.ADMIN_NAME,
                 password,
-                role: RolesEnum.SUPPER_MANAGER,
+                role: RolesEnum.SUPER_MANAGER,
             });
 
             await this.administratorRepository.save(newAdmin)
@@ -43,7 +43,7 @@ export class SeedAdminService {
         }
 
         await this.administratorRepository.update(admin.id, {
-            role: RolesEnum.SUPPER_MANAGER,
+            role: RolesEnum.SUPER_MANAGER,
         });
 
         this.logger.log('✅ Admin updated successfully');

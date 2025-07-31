@@ -1,4 +1,4 @@
 export enum RolesEnum {
     MANAGER = 'manager',
-    SUPPER_MANAGER = 'superManager',
+    SUPER_MANAGER = 'superManager',
 }

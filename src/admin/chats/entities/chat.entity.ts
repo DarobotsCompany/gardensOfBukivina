@@ -10,6 +10,7 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { AdministratorEntity } from '../../administrators/entities/administrator.entity';
 import { MessageEntity } from '../../messages/entities/message.entity';
 import { ChatStatus } from '../enums/chat-status.enum';
+import { NotionEntity } from 'src/admin/notions/entities/notion.entity';
 
 @Entity('chats')
 export class ChatEntity extends BasicEntity {
@@ -26,4 +27,7 @@ export class ChatEntity extends BasicEntity {
 
     @Column({ default: ChatStatus.NEW })
     status: ChatStatus;
+
+    @OneToMany(() => NotionEntity, (note) => note.chat, { cascade: true })
+    notes: NotionEntity[];
 }

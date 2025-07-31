@@ -6,6 +6,7 @@ import { RouterModule } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
+import { NotionsModule } from './notions/notions.module';
 
 const routes = [
   {
@@ -27,6 +28,10 @@ const routes = [
         path: '/auth',
         module: AuthModule,
       },
+      {
+        path: '/notions',
+        module: NotionsModule,
+      }
     ],
   },
 ];
@@ -44,6 +49,7 @@ const routes = [
     ChatsModule,
     MessagesModule,
     AuthModule,
+    NotionsModule
   ],
   controllers: [],
   providers: [],

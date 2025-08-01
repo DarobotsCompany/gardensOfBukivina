@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectBot, Update } from 'nestjs-telegraf';
+import { Action, Ctx, Hears, InjectBot, Update } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
 import { UsersService } from '../../users/services/users.service';
 import { ISessionContext } from '../interfaces/session-context.interface';
@@ -14,6 +14,10 @@ import { Not } from 'typeorm';
 import { MessageEntity } from 'src/admin/messages/entities/message.entity';
 import { ChatEntity } from 'src/admin/chats/entities/chat.entity';
 import { TicketsService } from 'src/admin/tickets/services/tickets.service';
+import { menuKeyboard } from '../keyboards/menu.keyboards';
+import { TicketType } from 'src/common/enums/ticket-type.enum';
+import { SUPPORT_TRIGGERS } from '../constants/bot-triggers';
+import { ticketCategoryKeyboard } from '../keyboards/ticket-category.keyboards';
 
 @Update()
 @Injectable()
@@ -23,11 +27,91 @@ export class BotSupportService {
     constructor(
         @InjectBot('bot') private readonly bot: Telegraf<Context>,
         private readonly usersService: UsersService,
-        private readonly chatService: ChatsService,
+        private readonly chatsService: ChatsService,
         private readonly messagesService: MessagesService,
         private readonly chatGateway: ChatGateway,
         private readonly ticketsService: TicketsService
     ) {}
+
+    @Action(SUPPORT_TRIGGERS.askCall.action)
+    async onTicketCall(@Ctx() ctx: ISessionContext) {
+        await ctx.answerCbQuery();
+
+        await ctx.editMessageText(
+            '📂 Оберіть категорію вашого звернення:',
+            ticketCategoryKeyboard(SUPPORT_TRIGGERS.callAction)
+        );
+    }
+
+    @Action(SUPPORT_TRIGGERS.askChat.action)
+    async onTicketChat(@Ctx() ctx: ISessionContext) {
+        await ctx.answerCbQuery();
+
+        await ctx.editMessageText(
+            '📂 Оберіть категорію вашого звернення:',
+            ticketCategoryKeyboard(SUPPORT_TRIGGERS.chatAction)
+        );
+    }
+
+    @Action(`${SUPPORT_TRIGGERS.callAction}-${TicketType.TECH_ISSUE}`)
+    @Action(`${SUPPORT_TRIGGERS.callAction}-${TicketType.GENERAL_QUESTION}`)
+    @Action(`${SUPPORT_TRIGGERS.callAction}-${TicketType.SOCIAL_INITIATIVE}`)
+    @Action(`${SUPPORT_TRIGGERS.callAction}-${TicketType.ORDER_ISSUE}`)
+    async onCategoryCallSelected(@Ctx() ctx: ISessionContext) {
+        const callbackQuery = ctx.callbackQuery as Extract<typeof ctx.callbackQuery, { data: string }>;
+        const category = callbackQuery.data.split('-').pop() as TicketType;
+        
+        await ctx.answerCbQuery();
+        await ctx.editMessageText('✍️ Опишіть вашу ситуацію детальніше, будь ласка.');
+
+        ctx.session.call = true;
+        ctx.session.typeTicketCall = category;
+    }
+
+    @Action(`${SUPPORT_TRIGGERS.chatAction}-${TicketType.TECH_ISSUE}`)
+    @Action(`${SUPPORT_TRIGGERS.chatAction}-${TicketType.GENERAL_QUESTION}`)
+    @Action(`${SUPPORT_TRIGGERS.chatAction}-${TicketType.SOCIAL_INITIATIVE}`)
+    @Action(`${SUPPORT_TRIGGERS.chatAction}-${TicketType.ORDER_ISSUE}`)    
+    async отTicketChat(@Ctx() ctx: ISessionContext) {
+        const callbackQuery = ctx.callbackQuery as Extract<typeof ctx.callbackQuery, { data: string }>;
+        const category = callbackQuery.data.split('-').pop() as TicketType;
+
+        await ctx.reply('Напишіть нам, і ми відповімо 💬', {
+            reply_markup: {
+                keyboard: [[ { text: SUPPORT_TRIGGERS.completeChat }]],
+                resize_keyboard: true,
+            },
+        });
+
+        ctx.session.chat = true;
+        ctx.session.typeTicketChat = category
+    }
+
+    @Hears(SUPPORT_TRIGGERS.completeChat)
+    async onEndChat(@Ctx() ctx: ISessionContext) {
+        ctx.session.chat = false;
+        const telegramUserId = ctx.from?.id
+
+        if (!telegramUserId) {
+            await ctx.reply('Помилка: не вдалося отримати ваш ID користувача.');
+            await ctx.reply('✅ Ви у головному меню', {
+                reply_markup: {
+                    keyboard: menuKeyboard,
+                    resize_keyboard: true,
+                },
+            });
+            return
+        }
+
+        await this.chatsService.closeChatByTelegramId(telegramUserId);
+
+        await ctx.reply('✅ Ви у головному меню', {
+            reply_markup: {
+                keyboard: menuKeyboard,
+                resize_keyboard: true,
+            },
+        });
+    }
 
     async handleCall(ctx: ISessionContext): Promise<void> {
         const telegramId = ctx.from?.id;
@@ -75,7 +159,7 @@ export class BotSupportService {
 
         this.logger.debug(`Пользователь ${user.username} найден в базе данных.`);
 
-        let chat = await this.chatService.getChat({
+        let chat = await this.chatsService.getChat({
             where: {
                 user: { telegramId },
                 status: Not(ChatStatus.COMPLETE)
@@ -84,7 +168,7 @@ export class BotSupportService {
         });
 
         if (!chat) {
-            chat = await this.chatService.createChat({ user, category });
+            chat = await this.chatsService.createChat({ user, category });
         }
 
         const message = await this.messagesService.createMessageAsTelegramUser({

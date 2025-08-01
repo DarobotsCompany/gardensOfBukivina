@@ -5,7 +5,6 @@ import { BasketModule } from './basket/basket.module';
 import { DatabaseModule } from './database/database.module';
 import { AdminModule } from './admin/admin.module';
 import { BotModule } from './bot/bot.module';
-import { OcstoreModule } from './ocstore/ocstore.module';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 
 @Module({
@@ -15,8 +14,7 @@ import { LoggerMiddleware } from './common/middlewares/logger.middleware';
     BasketModule, 
     DatabaseModule, 
     AdminModule, 
-    BotModule, 
-    OcstoreModule,
+    BotModule
   ],
   providers: [],
 })

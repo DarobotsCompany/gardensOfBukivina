@@ -102,10 +102,12 @@ export class ChatsService {
             relations: ['user'],
         });
 
-        for (const chat of chats) {
-            chat.status = ChatStatus.COMPLETE;
-            await this.chatRepository.save(chat);
-        }
+        await Promise.all(
+            chats.map(chat => {
+                chat.status = ChatStatus.COMPLETE;
+                return this.chatRepository.save(chat);
+            }),
+        );
     }
 
     async ownManadgerToChat(query: OwnChatDto): Promise<IMessage> {

@@ -6,12 +6,14 @@ import { ChatsModule } from '../admin/chats/chats.module';
 import { BotSupportService } from './services/bot-support.service';
 import { BotTextService } from './services/bot-text.service';
 import { MessagesModule } from '../admin/messages/messages.module';
+import { TicketsModule } from 'src/admin/tickets/tickets.module';
 
 @Module({
     imports: [
         UsersModule,
         ChatsModule,
-        MessagesModule
+        MessagesModule,
+        TicketsModule
     ],
     controllers: [],
     providers: [BotAuthService, BotMenuService, BotSupportService, BotTextService],

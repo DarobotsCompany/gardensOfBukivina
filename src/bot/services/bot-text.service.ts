@@ -3,18 +3,16 @@ import { Ctx, InjectBot, On, Update } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
 import { UsersService } from '../../users/services/users.service';
 import { ISessionContext } from '../interfaces/session-context.interface';
-import { BotTriggers } from '../constants/bot-triggers';
 import { BotSupportService } from './bot-support.service';
 import { menuKeyboard } from '../keyboards/menu.keyboards';
-import { keyboard } from 'telegraf/typings/markup';
 
 @Update()
 @Injectable()
 export class BotTextService {
     constructor(
-      @InjectBot('bot') private readonly bot: Telegraf<Context>,
-      private readonly usersService: UsersService,
-      private readonly botSupportService: BotSupportService
+        @InjectBot('bot') private readonly bot: Telegraf<Context>,
+        private readonly usersService: UsersService,
+        private readonly botSupportService: BotSupportService
     ) {}
 
     @On('text')
@@ -30,6 +28,10 @@ export class BotTextService {
 
         if (ctx.session.chat) {
             await this.botSupportService.writeMessage(ctx);
+        }
+
+        if (ctx.session.call) {
+            await this.botSupportService.handleCall(ctx);
         }
     }
 

@@ -7,5 +7,17 @@ export const BotTriggers = {
     info: '⚠️🖋 Інфо',
     support: '💬 Підтримка',
 
-    completeChat: '❌ Завершити чат'
+    completeChat: '❌ Завершити чат',
+
+    ticketChat: {
+        text: '📝 Написати звернення',
+        action: 'support_chat'
+    },
+    ticketCall: {
+        text: '📞 Замовити дзвінок',
+        action: 'support_call'
+    },
+
+    callAction: 'CALL_ACTION',
+    chatAction: 'CHAT_ACTION'
 };

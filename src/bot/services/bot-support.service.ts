@@ -13,6 +13,7 @@ import { ChatStatus } from 'src/admin/chats/enums/chat-status.enum';
 import { Not } from 'typeorm';
 import { MessageEntity } from 'src/admin/messages/entities/message.entity';
 import { ChatEntity } from 'src/admin/chats/entities/chat.entity';
+import { TicketsService } from 'src/admin/tickets/services/tickets.service';
 
 @Update()
 @Injectable()
@@ -25,11 +26,42 @@ export class BotSupportService {
         private readonly chatService: ChatsService,
         private readonly messagesService: MessagesService,
         private readonly chatGateway: ChatGateway,
+        private readonly ticketsService: TicketsService
     ) {}
+
+    async handleCall(ctx: ISessionContext): Promise<void> {
+        const telegramId = ctx.from?.id;
+        const text = ctx.text;
+        const category = ctx.session.typeTicketCall
+
+        if (!telegramId || !category) return;
+
+        this.logger.debug('Обработка звонка от пользователя:', telegramId, 'сообщение:', text);
+
+        const user = await this.usersService.getUser({
+            where: { telegramId },
+        });
+
+        if (!user) {
+            this.logger.warn(`Пользователь с ID ${telegramId} не найден.`);
+            return;
+        }
+
+        await this.ticketsService.createTicket({
+            message: text || 'Пользователь не оставил сообщение',
+            user,
+            category
+        })
+
+        ctx.session.call = false; 
+        ctx.session.typeTicketCall = undefined
+        await ctx.reply('Ваше звернення прийнято. Ми зв’яжемося з вами найближчим часом 📞');
+    }
 
     async writeMessage(ctx: ISessionContext): Promise<void> {
         const telegramId = ctx.from?.id;
         const text = ctx.text;
+        const category = ctx.session.typeTicketChat
 
         this.logger.debug('Получено сообщение:', text, 'от пользователя:', telegramId);
 
@@ -37,7 +69,9 @@ export class BotSupportService {
             where: { telegramId },
         });
 
-        if (!user || !text) return;
+        if (!user || !text || !category) return;
+                console.log(ctx.session.typeTicketChat)
+
 
         this.logger.debug(`Пользователь ${user.username} найден в базе данных.`);
 
@@ -50,7 +84,7 @@ export class BotSupportService {
         });
 
         if (!chat) {
-            chat = await this.chatService.createChat({ user });
+            chat = await this.chatService.createChat({ user, category });
         }
 
         const message = await this.messagesService.createMessageAsTelegramUser({
@@ -62,6 +96,7 @@ export class BotSupportService {
             this.messagesService.countUnreadMessages(chat.id),
         ]);
 
+        ctx.session.typeTicketChat = undefined
         await this.onTelegramMessageReceived(chat, message, lastMessage, unreadCount);
     }
 

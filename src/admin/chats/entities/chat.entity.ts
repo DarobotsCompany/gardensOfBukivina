@@ -11,6 +11,7 @@ import { AdministratorEntity } from '../../administrators/entities/administrator
 import { MessageEntity } from '../../messages/entities/message.entity';
 import { ChatStatus } from '../enums/chat-status.enum';
 import { NotionEntity } from 'src/admin/notions/entities/notion.entity';
+import { TicketType } from 'src/common/enums/ticket-type.enum';
 
 @Entity('chats')
 export class ChatEntity extends BasicEntity {
@@ -30,4 +31,7 @@ export class ChatEntity extends BasicEntity {
 
     @OneToMany(() => NotionEntity, (note) => note.chat, { cascade: true })
     notes: NotionEntity[];
+
+    @Column({ nullable: false })
+    category: TicketType;
 }

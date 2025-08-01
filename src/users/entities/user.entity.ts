@@ -2,6 +2,7 @@ import { BasicEntity } from 'src/database/entities/basic.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { ChatEntity } from '../../admin/chats/entities/chat.entity';
 import { MessageEntity } from '../../admin/messages/entities/message.entity';
+import { TicketEntity } from 'src/admin/tickets/entities/ticket.entity';
 
 @Entity('users')
 export class UserEntity extends BasicEntity {
@@ -22,4 +23,7 @@ export class UserEntity extends BasicEntity {
 
     @OneToMany(() => MessageEntity, (message) => message.user)
     messages: MessageEntity[];
+
+    @OneToMany(() => TicketEntity, (ticket) => ticket.user)
+    tickets: TicketEntity[];
 }

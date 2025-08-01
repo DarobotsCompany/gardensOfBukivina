@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ChatEntity } from '../entities/chat.entity';
 import { FindOneOptions, IsNull, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,6 +18,8 @@ import { RolesEnum } from 'src/admin/administrators/enums/roles.enum';
 
 @Injectable()
 export class ChatsService {
+    private readonly logger = new Logger(ChatsService.name, { timestamp: true });
+
     constructor(
         @InjectRepository(ChatEntity) private readonly chatRepository: Repository<ChatEntity>,
         @InjectBot('bot') private readonly bot: Telegraf<Context>,
@@ -134,5 +136,24 @@ export class ChatsService {
         await this.chatRepository.save(chat);
 
         return { message: `Ви успішно призначили менеджера ${administrator.username} для чату.`}
+    }
+
+    async joinNotificateUser(chat: ChatEntity, admin: IAdminJwtPayload): Promise<void> {
+        if (chat.status === ChatStatus.COMPLETE) {
+            this.logger.error(`Проблема з чатом ${JSON.stringify(chat)}`)
+            return
+        }
+
+        const telegramId = chat.user.telegramId
+
+        try {
+            await this.bot.telegram.sendMessage(
+                telegramId,
+                `🔔 Адміністратор ${admin.username} приєднався до діалогу з вами.`
+            );
+            this.logger.debug(`✉️ Повідомлення надіслано користувачу ${telegramId}`);
+        } catch (err) {
+            this.logger.error(`❌ Не вдалося надіслати повідомлення користувачу ${telegramId}: ${err.message}`);
+        }
     }
 }

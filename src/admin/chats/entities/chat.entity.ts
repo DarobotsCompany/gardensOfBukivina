@@ -2,6 +2,7 @@ import { BasicEntity } from 'src/database/entities/basic.entity';
 import {
     Column,
     Entity,
+    Index,
     JoinColumn,
     ManyToOne,
     OneToMany
@@ -17,6 +18,7 @@ import { TicketType } from 'src/common/enums/ticket-type.enum';
 export class ChatEntity extends BasicEntity {
     @ManyToOne(() => UserEntity, (user) => user.chats, { nullable: false, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
+    @Index()
     user: UserEntity;
 
     @ManyToOne(() => AdministratorEntity, (admin) => admin.chats, { nullable: true, onDelete: 'SET NULL' })

@@ -14,6 +14,7 @@ import { BuildGeneralRoomId } from '../utils/build-generalroom-name';
 import { NEW_FOR_ALL_ROOM } from '../constants/chat-all.constants';
 import { JwtWsGuard } from '../guards/jwt-ws-guard';
 import { Logger, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { ChatsService } from './chats.service';
 
 @WebSocketGateway({ cors: { origin: '*', }})
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -22,6 +23,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     constructor(
         private readonly jwtService: JwtService,
+        private readonly chatsService: ChatsService
     ) {}
 
     afterInit(server: Server) {
@@ -52,10 +54,22 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     @UseGuards(JwtWsGuard)
     @SubscribeMessage('joinPersonalRoom')
-    handleJoinPersonalRoom(client: Socket, payload: { telegramId: string }) {
-        const roomName = new BuildRoomId(payload.telegramId).getRoomName;
+    async handleJoinPersonalRoom(client: Socket, payload: { chatId: number }) {
+        const admin = client.data.user
+        const chatId = payload.chatId
+
+        const chat = await this.chatsService.getChat({
+            where: { id: chatId },
+            relations: ['user']
+        })
+
+        if (!chat) return;
+
+        const telegramId = chat.user.telegramId
+        const roomName = new BuildRoomId(telegramId).getRoomName;
         client.join(roomName);
-        this.logger.debug(`👤 ${client.data.user?.email} приєднався до персональної кімнати ${roomName}`);
+        await this.chatsService.joinNotificateUser(chat, admin)
+        this.logger.debug(`👤 ${admin?.email} приєднався до персональної кімнати ${roomName}`);
     }
 
     handleDisconnect(client: Socket) {

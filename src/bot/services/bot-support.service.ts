@@ -98,6 +98,7 @@ export class BotSupportService {
 
         ctx.session.typeTicketChat = undefined
         await this.onTelegramMessageReceived(chat, message, lastMessage, unreadCount);
+         ctx.reply("Ваше звернення передано менеджеру. Будь ласка, залишайтесь у чаті.")
     }
 
     private async onTelegramMessageReceived(
@@ -107,8 +108,14 @@ export class BotSupportService {
         unreadCount?: number
     ): Promise<void> {
         const adminId = chat.administrator?.id ?? null;
+        const telegramId = message.user?.telegramId
 
-        const roomName = new BuildRoomId(String(message.user?.telegramId)).getRoomName;
+        if (!telegramId) {
+            this.logger.error("Помилка з telegramId")
+            return;
+        }
+
+        const roomName = new BuildRoomId(telegramId).getRoomName;
         const generalRoomName = adminId ? new BuildGeneralRoomId(adminId).getRoomName : NEW_FOR_ALL_ROOM;
 
         this.chatGateway.server.to(generalRoomName).emit('newMessage', {
